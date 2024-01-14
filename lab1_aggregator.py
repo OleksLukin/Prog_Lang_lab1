@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import time
-from threading import Thread
+from threading import Thread, Event
 from queue import Queue
 
 
@@ -31,9 +31,10 @@ class NewsUpdater:
         self.url_extractors = url_extractors
         self.update_time = update_time
         self.news_queue = Queue()
+        self.stop_event = Event()
 
     def update_news(self):
-        while True:
+        while not self.stop_event.is_set():
             for url_extractor in self.url_extractors:
                 news_data = url_extractor.extract_news()
 
@@ -56,6 +57,7 @@ class NewsUpdater:
                     print("-" * 50)
         except KeyboardInterrupt:
             print("Exiting...")
+            self.stop_event.set()
             update_thread.join()
 
 
